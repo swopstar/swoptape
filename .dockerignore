@@ -1,0 +1,7 @@
+# distribution artifacts
+/dist/
+
+# build artifacts
+/tmp/
+/frontend/dist/
+/frontend/dist/node_modules/

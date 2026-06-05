@@ -1,0 +1,45 @@
+package www
+
+import (
+	"context"
+	"log/slog"
+	"net"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/swopstar/swoptape/config"
+	"github.com/swopstar/swoptape/services"
+)
+
+type WebServer struct {
+	config   *config.Config
+	logger   *slog.Logger
+	lifetime context.Context
+
+	Router     *gin.Engine
+	httpServer *http.Server
+}
+
+func New(
+	ctx context.Context,
+	cfg *config.Config,
+	l *slog.Logger,
+	svc *services.Services,
+) (srv *WebServer, err error) {
+	panic("TODO")
+}
+
+func (srv *WebServer) Listen() error {
+	listener, err := net.Listen(srv.config.Server.Network, srv.config.Server.Address)
+	if err != nil {
+		return err
+	}
+
+	srv.logger.Info("Starting server", "addr", listener.Addr().String())
+	return srv.httpServer.Serve(listener)
+}
+
+func (srv *WebServer) Close() error {
+	srv.logger.Info("Closing server")
+	return srv.httpServer.Shutdown(srv.lifetime)
+}

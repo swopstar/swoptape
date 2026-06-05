@@ -1,0 +1,38 @@
+[server]
+network = 'tcp'
+address = '0.0.0.0:8000'
+
+[database]
+# (optional) PostgreSQL connection string
+dsn = ''
+host = 'localhost'
+port = 5432
+username = 'user'
+password = 'pass'
+database = 'swoptape'
+log = false
+log-param = false
+
+[database.parameters]
+TimeZone = 'UTC'
+sslmode = 'prefer'
+
+[auth]
+[auth.jwt]
+# path to private key used to sign JWT tokens
+key-path = 'jwt.key'
+# how long an access token should last
+access-token-ttl = '5m0s'
+# how long a refresh token should last
+refresh-token-ttl = '2160h0m0s'
+# issuer to use in JWT tokens
+issuer = 'swoptape'
+
+[jobs]
+# number of workers per queue (defaults to CPU core count)
+default-workers = 14
+# time to wait for running jobs during shutdown
+shutdown-timeout = '30s'
+
+# per-queue worker configuration
+[jobs.queues]
