@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	gkdatabase "github.com/swopstar/gokit/database"
+	"github.com/swopstar/gokit/jobs"
 )
 
 type Database struct {
@@ -16,6 +17,7 @@ func Open(cfg *gkdatabase.Config, l *slog.Logger) (*Database, error) {
 		return nil, err
 	}
 
+	db.AddModels(jobs.Models...)
 	db.AddModels(Models...)
 
 	return &Database{Database: db}, nil

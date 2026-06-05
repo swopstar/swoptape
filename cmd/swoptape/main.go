@@ -45,6 +45,12 @@ func main() {
 		os.Exit(exitstatus.ErrTemp) // TODO: derive exit code from error value
 	}
 
+	err = db.AutoMigrate()
+	if err != nil {
+		logger.Error("Failed to auto-migrate database", "err", err)
+		os.Exit(exitstatus.ErrPerm)
+	}
+
 	svc, err := services.New(ctx, &cfg, logger.WithGroup("svc"), db)
 	if err != nil {
 		logger.Error("Failed to start services", "err", err)
