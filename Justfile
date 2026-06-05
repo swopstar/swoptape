@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# SPDX-FileCopyrightText: 2026 Rareș Nistor
+
 mod go
 mod web
 
@@ -13,6 +16,7 @@ build: (web::build) (go::build)
 fmt: (go::fmt) (web::fmt)
 
 check: (go::check) (web::check) (go::check-tidy)
+    reuse lint
 
 [parallel]
 test: (go::test) (web::test)

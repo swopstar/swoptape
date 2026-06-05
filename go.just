@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# SPDX-FileCopyrightText: 2026 Rareș Nistor
+
 version_year    := `date +%y`
 version_month   := `date +%m`
 version_release := "0"

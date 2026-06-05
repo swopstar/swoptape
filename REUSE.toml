@@ -1,0 +1,68 @@
+version = 1
+
+[[annotations]]
+path = ["go.mod", "go.sum", "package-lock.json"]
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = [
+    ".air.toml",
+    ".golangci.yml",
+    ".pre-commit-config.yaml",
+    ".dockerignore",
+    "Dockerfile",
+]
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = [".gitignore", "frontend/.gitignore"]
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = ["README.md"]
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = [
+    "frontend/package.json",
+    "frontend/package-lock.json",
+    "frontend/tsconfig.json",
+    "frontend/tsconfig.app.json",
+    "frontend/tsconfig.node.json",
+]
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = [
+    "logo.svg",
+    "frontend/public/favicon.svg",
+    "frontend/public/icons.svg",
+    "frontend/src/assets/hero.png",
+]
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = "frontend/src/assets/react.svg"
+SPDX-FileCopyrightText = "Meta Platforms, Inc. and affiliates"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "frontend/src/assets/vite.svg"
+SPDX-FileCopyrightText = "Vite contributors"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = "dev/**"
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["CLAUDE.md", ".claude/**"]
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "AGPL-3.0-only"
