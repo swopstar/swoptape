@@ -11,6 +11,7 @@ var Models = []any{
 	&User{},
 	&UserPermission{},
 	&Session{},
+	&ApplicationToken{},
 }
 
 type User struct {
@@ -26,17 +27,9 @@ type User struct {
 }
 
 type UserPermission struct {
-	UserID     uint       `gorm:"index"`
-	Permission Permission `gorm:"index"`
+	UserID     uint   `gorm:"uniqueIndex:idx_user_perm"`
+	Permission string `gorm:"uniqueIndex:idx_user_perm"`
 }
-
-type Permission string
-
-const (
-	AdminPermission  Permission = "admin"
-	UploadPermission Permission = "upload"
-	TagPermission    Permission = "tag"
-)
 
 type Session struct {
 	gorm.Model
@@ -49,6 +42,18 @@ type Session struct {
 	CreatedAtIPAddress string
 	CreatedByUserAgent string
 
+	LastUsedAt *time.Time
+	RevokedAt  *time.Time
+}
+
+type ApplicationToken struct {
+	gorm.Model
+
+	UserID    uint `gorm:"index"`
+	Name      string
+	TokenHash string `gorm:"uniqueIndex"`
+
+	ExpiresAt  *time.Time
 	LastUsedAt *time.Time
 	RevokedAt  *time.Time
 }

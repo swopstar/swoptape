@@ -8,10 +8,12 @@ import (
 	"github.com/swopstar/gokit/jobs"
 	"github.com/swopstar/swoptape/config"
 	"github.com/swopstar/swoptape/database"
+	"github.com/swopstar/swoptape/services/identity"
 )
 
 type Services struct {
-	Jobs *jobs.JobService
+	Jobs     *jobs.JobService
+	Identity identity.IService
 }
 
 func New(
@@ -25,13 +27,19 @@ func New(
 		return nil, svcInitError(l, "jobs", err)
 	}
 
+	identitySvc, err := identity.New(ctx, cfg, l.WithGroup("identity"), db)
+	if err != nil {
+		return nil, svcInitError(l, "identity", err)
+	}
+
 	return &Services{
-		Jobs: jobSvc,
+		Jobs:     jobSvc,
+		Identity: identitySvc,
 	}, nil
 }
 
 func (svc *Services) Close() error {
-	panic("TODO")
+	return svc.Jobs.Shutdown()
 }
 
 func svcInitError(l *slog.Logger, name string, err error) error {
