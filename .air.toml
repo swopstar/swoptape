@@ -2,8 +2,8 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "go build -o ./tmp/swoptape ./cmd/swoptape"
-bin = "./tmp/swoptape"
+cmd = "just build-backend"
+bin = "./tmp/bin/swoptape"
 delay = 1000
 exclude_dir = ["assets", "tmp", "vendor", "frontend", "node_modules", "data"]
 exclude_regex = ["_test.go"]

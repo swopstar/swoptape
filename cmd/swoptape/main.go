@@ -10,6 +10,8 @@ import (
 
 	gkconfig "github.com/swopstar/gokit/config"
 	"github.com/swopstar/gokit/exitstatus"
+	"github.com/swopstar/gokit/ver"
+
 	"github.com/swopstar/swoptape/config"
 	"github.com/swopstar/swoptape/database"
 	"github.com/swopstar/swoptape/services"
@@ -24,7 +26,10 @@ func main() {
 	env := gkconfig.NewRealEnv()
 
 	dataDir := config.DataDir(env)
-	logger.Info("Starting application", "dataDir", dataDir)
+	logger.Info("Starting application",
+		"dataDir", dataDir,
+		"version", ver.Get(),
+	)
 
 	cfg, err := config.LoadConfig(logger, env, dataDir)
 	if err != nil {
