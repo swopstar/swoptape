@@ -2,7 +2,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "just build-backend"
+cmd = "just backend build"
 bin = "./tmp/bin/swoptape"
 delay = 1000
 exclude_dir = ["assets", "tmp", "vendor", "frontend", "node_modules", "data"]
