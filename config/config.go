@@ -26,6 +26,10 @@ type Config struct {
 type Server struct {
 	Network string `toml:"network"`
 	Address string `toml:"address"`
+
+	ReadTimeout  types.Duration `toml:"read-timeout"`
+	WriteTimeout types.Duration `toml:"write-timeout"`
+	IdleTimeout  types.Duration `toml:"idle-timeout"`
 }
 
 type Database struct {
@@ -48,8 +52,11 @@ func DefaultConfig(env *config.Env) Config {
 
 	return Config{
 		Server: Server{
-			Network: env.GetOrDefault("SERVER_NETWORK", "tcp"),
-			Address: env.GetOrDefault("SERVER_ADDRESS", "0.0.0.0:8000"),
+			Network:      env.GetOrDefault("SERVER_NETWORK", "tcp"),
+			Address:      env.GetOrDefault("SERVER_ADDRESS", "0.0.0.0:8000"),
+			ReadTimeout:  types.Duration{Duration: 15 * time.Second},
+			WriteTimeout: types.Duration{Duration: 15 * time.Second},
+			IdleTimeout:  types.Duration{Duration: 60 * time.Second},
 		},
 		Database: database.DefaultConfig(env.WithPrefix("DATABASE_"), "swoptape"),
 		Auth: Auth{
@@ -80,7 +87,7 @@ func LoadConfig(l *slog.Logger, env *config.Env, p string) (cfg Config, err erro
 	} else if err != nil {
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	return LoadConfigFromReader(env, file)
 }
@@ -90,7 +97,7 @@ func (c Config) writeConfig(p string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	encoder := toml.NewEncoder(file)
 	return encoder.Encode(c)
