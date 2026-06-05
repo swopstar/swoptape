@@ -40,3 +40,10 @@ setup-frontend:
 
 build-frontend:
     npm -C frontend run build
+
+#
+# Database
+#
+
+local-db *args='up -d':
+    docker compose -f dev/swoptape-dev-db/docker-compose.yml {{args}}
