@@ -1,0 +1,1331 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 Rareș Nistor
+
+openapi: 3.1.0
+
+info:
+  title: swoptape API
+  version: 0.0.0
+  description: swoptape music streaming server API.
+
+servers:
+  - url: /api/v0
+    description: Current server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: >
+        JWT access token issued by POST /auth/sessions. The token carries the
+        entitlements granted at login. The `admin` entitlement implicitly
+        includes all permission-based entitlements (e.g. `tag`), but scope
+        entitlements such as `internal` must be explicitly requested and are
+        never implied.
+
+  parameters:
+    skip:
+      name: skip
+      in: query
+      schema:
+        type: integer
+        default: 0
+      description: Number of items to skip.
+    count:
+      name: count
+      in: query
+      schema:
+        type: integer
+        default: 50
+      description: Maximum number of items to return.
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: number
+        username:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+
+    Session:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        ipAddress:
+          type: string
+        userAgent:
+          type: string
+        lastUsedAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+
+    Disc:
+      type: object
+      properties:
+        number:
+          type: integer
+        title:
+          type: [string, 'null']
+
+    Collection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        parentId:
+          type: [string, 'null']
+          format: uuid
+          readOnly: true
+
+    Artist:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+
+    Album:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+        artists:
+          type: array
+          items:
+            $ref: '#/components/schemas/Artist'
+        year:
+          type: [integer, 'null']
+        coverArt:
+          type: [string, 'null']
+        discs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Disc'
+
+    Track:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+        artists:
+          type: array
+          items:
+            $ref: '#/components/schemas/Artist'
+        album:
+          $ref: '#/components/schemas/Album'
+        collectionId:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The collection (folder) this track lives in.
+        disc:
+          type: [integer, 'null']
+        trackNumber:
+          type: [integer, 'null']
+        duration:
+          type: number
+          readOnly: true
+          description: Duration in seconds.
+
+    PaginationMeta:
+      type: object
+      required: [skip, total]
+      properties:
+        skip:
+          type: integer
+        total:
+          type: integer
+
+    PaginatedCollections:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Collection'
+
+    PaginatedArtists:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Artist'
+
+    PaginatedAlbums:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Album'
+
+    PaginatedTracks:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Track'
+
+    SearchResults:
+      type: object
+      properties:
+        artists:
+          type: array
+          items:
+            $ref: '#/components/schemas/Artist'
+        albums:
+          type: array
+          items:
+            $ref: '#/components/schemas/Album'
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Track'
+
+    Playlist:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+        description:
+          type: [string, 'null']
+        ownerUsername:
+          type: string
+          readOnly: true
+        trackCount:
+          type: integer
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+
+    PlaylistTrack:
+      allOf:
+        - $ref: '#/components/schemas/Track'
+        - type: object
+          properties:
+            position:
+              type: integer
+              readOnly: true
+
+    PaginatedPlaylists:
+      allOf:
+        - $ref: '#/components/schemas/PaginationMeta'
+        - type: object
+          required: [items]
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Playlist'
+
+    AutocompleteResult:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [artist, album, track, collection]
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          anyOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+        parameters:
+          type: object
+          additionalProperties:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid credentials.
+    Forbidden:
+      description: Authenticated but not authorised for this resource.
+    NotFound:
+      description: Resource not found.
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: auth
+    description: Authentication — current session only.
+  - name: users
+    description: User management.
+  - name: library
+    description: Music library — collections, artists, albums, tracks, and search.
+  - name: playlists
+    description: Playlist management.
+  - name: system
+    description: Instance information.
+  - name: internal
+    description: Unstable, internal endpoints.
+
+paths:
+  /instance/version:
+    get:
+      operationId: getInstanceVersion
+      tags: [system]
+      description: Get version information for this instance. Requires authentication.
+      responses:
+        200:
+          description: Version information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: "1.2.3"
+                  branch:
+                    type: string
+                    example: "main"
+                  commit:
+                    type: string
+                    example: "a1b2c3d"
+                  source:
+                    type: string
+                    format: uri
+                    example: "https://github.com/swopstar/swoptape"
+
+  /instance/status:
+    get:
+      operationId: getInstanceStatus
+      tags: [system]
+      description: Get runtime status of this instance. Requires authentication.
+      responses:
+        200:
+          description: Runtime status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cpu:
+                    type: object
+                    properties:
+                      usedPercent:
+                        type: number
+                        description: CPU utilisation as a percentage (0–100).
+                  memory:
+                    type: object
+                    properties:
+                      usedBytes:
+                        type: integer
+                      totalBytes:
+                        type: integer
+                  storage:
+                    type: object
+                    properties:
+                      usedBytes:
+                        type: integer
+                      totalBytes:
+                        type: integer
+
+  /auth/sessions:
+    post:
+      operationId: createSession
+      tags: [auth]
+      security: []
+      description: Log into your account.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "admin"
+                password:
+                  type: string
+                  example: "Admin123"
+                pin:
+                  type: string
+                  example: "123456"
+                entitlements:
+                  type: array
+                  example: ["admin", "tag", "internal"]
+      responses:
+        200:
+          description: Session created.
+          content:
+            application/json:
+              schema:
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  entitlements:
+                    type: array
+                    items:
+                      type: string
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        401:
+          description: Authentication failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                "Username and password is incorrect":
+                  value:
+                    error: "incorrect_credentials"
+                    parameters:
+                      username: incorrect
+                      password: incorrect
+                "PIN required":
+                  value:
+                    error: "incorrect_credentials"
+                    parameters:
+                      pin: required
+
+    delete:
+      operationId: endCurrentSession
+      tags: [auth]
+      description: Revoke the current session (logout).
+      responses:
+        204:
+          description: Session revoked.
+
+  /auth/sessions/refresh:
+    post:
+      operationId: refreshToken
+      tags: [auth]
+      security: []
+      description: Refresh your access token.
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+
+  /library/collections:
+    get:
+      operationId: listCollections
+      tags: [library]
+      description: List root collections (top-level folders).
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Collection list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCollections'
+
+  /library/collections/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getCollection
+      tags: [library]
+      description: Get a collection.
+      responses:
+        200:
+          description: Collection detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/collections/{id}/collections:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listSubcollections
+      tags: [library]
+      description: List direct subcollections of a collection.
+      responses:
+        200:
+          description: Subcollection list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Collection'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/collections/{id}/tracks:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listCollectionTracks
+      tags: [library]
+      description: List tracks directly in a collection.
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Track list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTracks'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/artists:
+    get:
+      operationId: listArtists
+      tags: [library]
+      description: List all artists.
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Artist list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedArtists'
+    post:
+      operationId: createArtist
+      tags: [library]
+      description: Create an artist. Requires the `tag` entitlement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Artist'
+      responses:
+        201:
+          description: Artist created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /library/artists/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getArtist
+      tags: [library]
+      description: Get an artist.
+      responses:
+        200:
+          description: Artist detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+        404:
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateArtist
+      tags: [library]
+      description: Update an artist. Requires the `tag` entitlement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Artist'
+      responses:
+        200:
+          description: Updated artist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/artists/{id}/merge:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The artist to rename and keep.
+    post:
+      operationId: mergeArtist
+      tags: [library]
+      description: >
+        Merge two artists into one. The target artist (`id`) is renamed to
+        `name` and absorbs all tracks and albums from `sourceId`; the source
+        is deleted. Requires the `tag` entitlement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceId, name]
+              properties:
+                sourceId:
+                  type: string
+                  format: uuid
+                  description: The artist to be absorbed and deleted.
+                name:
+                  type: string
+                  description: New name for the merged artist.
+      responses:
+        200:
+          description: The merged artist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artist'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/artists/{id}/split:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    post:
+      operationId: splitArtist
+      tags: [library]
+      description: >
+        Split an artist in two. The existing artist is renamed to `name`; a
+        new artist is created with `newName`; all tracks belonging to the
+        existing artist are assigned to both. Use PATCH on individual tracks
+        to remove artists as needed. Requires the `tag` entitlement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, newName]
+              properties:
+                name:
+                  type: string
+                  description: New name for the existing artist.
+                newName:
+                  type: string
+                  description: Name for the newly created artist.
+      responses:
+        200:
+          description: Both artists after the split.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [artist, newArtist]
+                properties:
+                  artist:
+                    $ref: '#/components/schemas/Artist'
+                  newArtist:
+                    $ref: '#/components/schemas/Artist'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/artists/{id}/albums:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listArtistAlbums
+      tags: [library]
+      description: List albums by an artist.
+      responses:
+        200:
+          description: Album list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Album'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/albums:
+    get:
+      operationId: listAlbums
+      tags: [library]
+      description: List all albums.
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Album list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlbums'
+    post:
+      operationId: createAlbum
+      tags: [library]
+      description: Create an album. Requires the `tag` entitlement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Album'
+      responses:
+        201:
+          description: Album created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /library/albums/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getAlbum
+      tags: [library]
+      description: Get an album.
+      responses:
+        200:
+          description: Album detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+        404:
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateAlbum
+      tags: [library]
+      description: Update an album. Requires the `tag` entitlement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Album'
+      responses:
+        200:
+          description: Updated album.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Album'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/albums/{id}/tracks:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listAlbumTracks
+      tags: [library]
+      description: List tracks on an album, ordered by disc and track number.
+      responses:
+        200:
+          description: Track list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Track'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/tracks:
+    get:
+      operationId: listTracks
+      tags: [library]
+      description: List all tracks.
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Track list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTracks'
+
+  /library/tracks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getTrack
+      tags: [library]
+      description: Get a track.
+      responses:
+        200:
+          description: Track detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+        404:
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateTrack
+      tags: [library]
+      description: Update a track's metadata. Requires the `tag` entitlement.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Track'
+      responses:
+        200:
+          description: Updated track.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Track'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /library/search:
+    get:
+      operationId: search
+      tags: [library]
+      description: Search across artists, albums, and tracks. Returns the first page of each type.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Bucketed search results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+
+  /library/search/artists:
+    get:
+      operationId: searchArtists
+      tags: [library]
+      description: Paginate artist results for a search query.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Artist results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedArtists'
+
+  /library/search/albums:
+    get:
+      operationId: searchAlbums
+      tags: [library]
+      description: Paginate album results for a search query.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Album results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlbums'
+
+  /library/search/tracks:
+    get:
+      operationId: searchTracks
+      tags: [library]
+      description: Paginate track results for a search query.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Track results.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTracks'
+
+  /library/search/autocomplete:
+    get:
+      operationId: searchAutocomplete
+      tags: [library]
+      description: Lightweight typeahead suggestions across all types.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Autocomplete suggestions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AutocompleteResult'
+
+  /playlists:
+    get:
+      operationId: listPlaylists
+      tags: [playlists]
+      description: List playlists accessible to the authenticated user.
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Playlist list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlaylists'
+    post:
+      operationId: createPlaylist
+      tags: [playlists]
+      description: Create a playlist.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Playlist'
+      responses:
+        201:
+          description: Playlist created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Playlist'
+
+  /playlists/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getPlaylist
+      tags: [playlists]
+      description: Get a playlist.
+      responses:
+        200:
+          description: Playlist detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Playlist'
+        404:
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updatePlaylist
+      tags: [playlists]
+      description: Update a playlist's name or description. Owner only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Playlist'
+      responses:
+        200:
+          description: Updated playlist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Playlist'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deletePlaylist
+      tags: [playlists]
+      description: Delete a playlist. Owner only.
+      responses:
+        204:
+          description: Playlist deleted.
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /playlists/{id}/tracks:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: listPlaylistTracks
+      tags: [playlists]
+      description: List tracks in a playlist, ordered by position.
+      parameters:
+        - $ref: '#/components/parameters/skip'
+        - $ref: '#/components/parameters/count'
+      responses:
+        200:
+          description: Track list.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginationMeta'
+                  - type: object
+                    required: [items]
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PlaylistTrack'
+        404:
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: addPlaylistTrack
+      tags: [playlists]
+      description: Append a track to the playlist. Owner only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [trackId]
+              properties:
+                trackId:
+                  type: string
+                  format: uuid
+      responses:
+        201:
+          description: Track added, returns the new entry with its position.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaylistTrack'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: reorderPlaylistTracks
+      tags: [playlists]
+      description: >
+        Reorder playlist tracks. Provide the full desired order as an array of
+        positions. Owner only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [positions]
+              properties:
+                positions:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        200:
+          description: Reordered track list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlaylistTrack'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /playlists/{id}/tracks/{position}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: position
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      operationId: removePlaylistTrack
+      tags: [playlists]
+      description: Remove a track at a specific position. Owner only.
+      responses:
+        204:
+          description: Track removed.
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /users/{username}/sessions:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Username or `current` for the authenticated user.
+    get:
+      operationId: listUserSessions
+      tags: [users]
+      description: List sessions for a user. Non-admins may only access their own.
+      responses:
+        200:
+          description: Session list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+        403:
+          $ref: '#/components/responses/Forbidden'
+    delete:
+      operationId: revokeAllUserSessions
+      tags: [users]
+      description: Revoke all sessions for a user. Non-admins may only revoke their own.
+      responses:
+        204:
+          description: All sessions revoked.
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /users/{username}/sessions/{uuid}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Username or `current` for the authenticated user.
+      - name: uuid
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getUserSession
+      tags: [users]
+      description: Get a specific session. Non-admins may only access their own.
+      responses:
+        200:
+          description: Session detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: revokeUserSession
+      tags: [users]
+      description: Revoke a specific session. Non-admins may only revoke their own.
+      responses:
+        204:
+          description: Session revoked.
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /users/{username}/appPasswords:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Username or `current` for the authenticated user.
+    get:
+      operationId: listAppPasswords
+      tags: [users]
+      description: List application passwords for a user. Non-admins may only access their own.
+    post:
+      operationId: createAppPassword
+      tags: [users]
+      description: Create a new application password. Non-admins may only create for their own account.
+
+  /users/{username}/appPasswords/{id}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Username or `current` for the authenticated user.
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      operationId: revokeAppPassword
+      tags: [users]
+      description: Revoke an application password. Non-admins may only revoke their own.
+      responses:
+        204:
+          description: Application password revoked.
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
