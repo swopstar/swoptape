@@ -1,0 +1,6 @@
+package: v0
+generate:
+  gin-server: true
+  strict-server: true
+  models: true
+output: server.gen.go

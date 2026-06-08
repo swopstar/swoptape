@@ -4,3 +4,6 @@
 
 # app data
 /data/
+
+# generated code
+*.gen.go

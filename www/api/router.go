@@ -5,6 +5,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/swopstar/swoptape/services"
 	v0 "github.com/swopstar/swoptape/www/api/v0"
 )
 
@@ -12,11 +13,9 @@ type Router struct {
 	V0 *v0.APIRouter
 }
 
-func New() *Router {
-	v0 := v0.New()
-
+func New(svc *services.Services) *Router {
 	return &Router{
-		V0: v0,
+		V0: v0.New(svc),
 	}
 }
 

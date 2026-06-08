@@ -63,6 +63,11 @@ SPDX-FileCopyrightText = "2026 Rareș Nistor"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
+path = "www/api/v0/oapi-codegen.yaml"
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "MIT"
+
+[[annotations]]
 path = ["CLAUDE.md", ".claude/**"]
 SPDX-FileCopyrightText = "2026 Rareș Nistor"
 SPDX-License-Identifier = "AGPL-3.0-only"

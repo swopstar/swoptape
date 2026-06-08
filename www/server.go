@@ -54,7 +54,7 @@ func New(
 		httpServer: httpServer,
 
 		rpc:      rpc.New(),
-		api:      api.New(),
+		api:      api.New(svc),
 		subsonic: subsonic.New(),
 	}
 
