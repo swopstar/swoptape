@@ -30,8 +30,8 @@ type User struct {
 }
 
 type UserPermission struct {
-	UserID     uint   `gorm:"uniqueIndex:idx_user_perm"`
-	Permission string `gorm:"uniqueIndex:idx_user_perm"`
+	UserID     uint   `gorm:"primaryKey"`
+	Permission string `gorm:"primaryKey"`
 }
 
 type Session struct {
