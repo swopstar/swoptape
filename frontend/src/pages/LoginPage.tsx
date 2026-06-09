@@ -16,7 +16,6 @@ import {
 } from "@swopstar/react-ui";
 import { LogIn } from "lucide-react";
 import { useCreateSession } from "../api/auth/auth";
-import type { CreateSession200 } from "../api/schemas/createSession200";
 import { setAuthTokens, setEntitlements } from "../auth";
 
 const ALL_ENTITLEMENTS = ["admin", "tag", "upload", "internal"];
@@ -31,8 +30,9 @@ export function LoginPage() {
 
   const mutation = useCreateSession({
     mutation: {
-      onSuccess: (data) => {
-        const session = data as unknown as CreateSession200;
+      onSuccess: (response) => {
+        if (response.status !== 200) return;
+        const session = response.data;
         if (session.accessToken && session.refreshToken) {
           setAuthTokens(
             session.accessToken,
