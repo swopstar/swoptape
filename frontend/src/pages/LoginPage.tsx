@@ -19,10 +19,14 @@ import { useCreateSession } from "../api/auth/auth";
 import type { CreateSession200 } from "../api/schemas/createSession200";
 import { setAuthTokens } from "../auth";
 
+const ALL_ENTITLEMENTS = ["admin", "tag", "upload", "internal"];
+
 export function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [pin, setPin] = useState("");
+  const [pinRequired, setPinRequired] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const mutation = useCreateSession({
@@ -38,17 +42,23 @@ export function LoginPage() {
           navigate({ to: "/home" });
         }
       },
-      onError: () => {
+      onError: (error) => {
+        const body = (error as { response?: { data?: unknown } })?.response
+          ?.data as { error?: string; parameters?: Record<string, string> };
+
+        if (
+          body?.error === "incorrect_credentials" &&
+          body?.parameters?.pin === "required"
+        ) {
+          setPinRequired(true);
+          setErrorMsg("Please enter your two-factor PIN.");
+          return;
+        }
+
         setErrorMsg("Incorrect username or password.");
       },
     },
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    mutation.mutate({ data: { username, password } });
-  };
 
   return (
     <div
@@ -76,7 +86,18 @@ export function LoginPage() {
         </CardHeader>
         <CardContent>
           <form
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              e.preventDefault();
+              setErrorMsg(null);
+              mutation.mutate({
+                data: {
+                  username,
+                  password,
+                  entitlements: ALL_ENTITLEMENTS,
+                  ...(pinRequired && pin ? { pin } : {}),
+                },
+              });
+            }}
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
             {errorMsg && (
@@ -93,6 +114,7 @@ export function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
+                disabled={pinRequired}
                 required
               />
             </div>
@@ -106,9 +128,29 @@ export function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
+                disabled={pinRequired}
                 required
               />
             </div>
+            {pinRequired && (
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "6px" }}
+              >
+                <Label htmlFor="pin">Two-factor PIN</Label>
+                <Input
+                  id="pin"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  autoComplete="one-time-code"
+                  autoFocus
+                  required
+                />
+              </div>
+            )}
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 type="submit"

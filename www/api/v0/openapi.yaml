@@ -426,6 +426,7 @@ paths:
         content:
           application/json:
             schema:
+              type: object
               required:
                 - username
                 - password
@@ -441,6 +442,8 @@ paths:
                   example: "123456"
                 entitlements:
                   type: array
+                  items:
+                    type: string
                   example: ["admin", "tag", "internal"]
       responses:
         200:
@@ -497,6 +500,7 @@ paths:
         content:
           application/json:
             schema:
+              type: object
               required: [refreshToken]
               properties:
                 refreshToken:
