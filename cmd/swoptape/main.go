@@ -26,6 +26,8 @@ var ErrConnClosed = errors.New("web server closed")
 
 func main() {
 	logger := slog.Default()
+	slog.SetLogLoggerLevel(slog.LevelDebug)
+
 	env := gkconfig.NewRealEnv()
 
 	dataDir := config.DataDir(env)
@@ -67,7 +69,8 @@ func main() {
 	}
 
 	go func() {
-		err := srv.Listen()
+		err := srv.Serve()
+		slog.Debug("web server returned", "err", err)
 		cancel(errors.Join(ErrConnClosed, err))
 	}()
 

@@ -33,6 +33,7 @@ path = [
     "frontend/tsconfig.json",
     "frontend/tsconfig.app.json",
     "frontend/tsconfig.node.json",
+    "frontend/.npmrc",
 ]
 SPDX-FileCopyrightText = "2026 Rareș Nistor"
 SPDX-License-Identifier = "AGPL-3.0-only"
@@ -42,20 +43,9 @@ path = [
     "logo.svg",
     "frontend/public/favicon.svg",
     "frontend/public/icons.svg",
-    "frontend/src/assets/hero.png",
 ]
 SPDX-FileCopyrightText = "2026 Rareș Nistor"
 SPDX-License-Identifier = "AGPL-3.0-only"
-
-[[annotations]]
-path = "frontend/src/assets/react.svg"
-SPDX-FileCopyrightText = "Meta Platforms, Inc. and affiliates"
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = "frontend/src/assets/vite.svg"
-SPDX-FileCopyrightText = "Vite contributors"
-SPDX-License-Identifier = "MIT"
 
 [[annotations]]
 path = "dev/**"

@@ -62,7 +62,7 @@ func New(
 	return
 }
 
-func (srv *WebServer) Listen() error {
+func (srv *WebServer) Serve() error {
 	listener, err := net.Listen(srv.config.Server.Network, srv.config.Server.Address)
 	if err != nil {
 		return err

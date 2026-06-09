@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-FileCopyrightText: 2026 Rareș Nistor
+
 const BASE_URL = "/api/v0";
 
 export const apiClient = async <T>(
