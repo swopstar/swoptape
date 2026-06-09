@@ -22,5 +22,6 @@ export const apiClient = async <T>(
     throw await response.json();
   }
 
-  return response.json();
+  const data = await response.json();
+  return { data, status: response.status, headers: response.headers } as T;
 };

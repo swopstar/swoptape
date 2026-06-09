@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Rareș Nistor
 
 import { Progress } from "@swopstar/react-ui";
-import { ChevronRight, FileText, Github } from "lucide-react";
+import { ChevronRight, FileText, FileCode } from "lucide-react";
 import {
   useGetInstanceStatus,
   useGetInstanceVersion,
@@ -116,7 +116,7 @@ export function SystemInfoPage() {
           }
         />
         <InfoRow
-          icon={<Github size={20} />}
+          icon={<FileCode size={20} />}
           title="Source code"
           subtitle="View the source code"
           onClick={() =>
