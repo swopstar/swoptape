@@ -283,6 +283,31 @@ components:
         name:
           type: string
 
+    AppPassword:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        token:
+          type: string
+          readOnly: true
+          description: Raw token — only present on creation.
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+
     Error:
       type: object
       required:
@@ -397,8 +422,9 @@ paths:
       security: []
       description: Log into your account.
       requestBody:
+        required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               required:
                 - username
@@ -467,13 +493,28 @@ paths:
       security: []
       description: Refresh your access token.
       requestBody:
+        required: true
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               required: [refreshToken]
               properties:
                 refreshToken:
                   type: string
+      responses:
+        200:
+          description: Tokens refreshed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+        401:
+          $ref: '#/components/responses/Unauthorized'
 
   /library/collections:
     get:
@@ -1307,10 +1348,44 @@ paths:
       operationId: listAppPasswords
       tags: [users]
       description: List application passwords for a user. Non-admins may only access their own.
+      responses:
+        200:
+          description: Application password list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppPassword'
+        403:
+          $ref: '#/components/responses/Forbidden'
     post:
       operationId: createAppPassword
       tags: [users]
       description: Create a new application password. Non-admins may only create for their own account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                expiresAt:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        201:
+          description: Application password created. The raw token is only returned here.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppPassword'
+        403:
+          $ref: '#/components/responses/Forbidden'
 
   /users/{username}/appPasswords/{id}:
     parameters:

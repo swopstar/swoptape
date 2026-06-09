@@ -1,0 +1,23 @@
+const BASE_URL = "/api/v0";
+
+export const apiClient = async <T>(
+  url: string,
+  options: RequestInit,
+): Promise<T> => {
+  const token = localStorage.getItem("accessToken");
+
+  const response = await fetch(`${BASE_URL}${url}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    throw await response.json();
+  }
+
+  return response.json();
+};

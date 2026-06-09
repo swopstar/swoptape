@@ -9,7 +9,15 @@ import tseslint from "typescript-eslint";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores([
+    "dist",
+    "src/api/auth",
+    "src/api/library",
+    "src/api/playlists",
+    "src/api/schemas",
+    "src/api/system",
+    "src/api/users",
+  ]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # SPDX-FileCopyrightText: 2026 Rareș Nistor
 
+generate:
+    npm -C frontend run generate
+
 serve:
     npm -C frontend run dev
 

@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# generated code
+src/api/auth/
+src/api/library/
+src/api/playlists/
+src/api/schemas/
+src/api/system/
+src/api/users/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
