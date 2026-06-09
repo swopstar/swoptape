@@ -18,6 +18,7 @@ import { AlbumsPage } from "./pages/AlbumsPage";
 import { SearchPage } from "./pages/SearchPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StubSettingsPage } from "./pages/StubSettingsPage";
+import { SystemInfoPage } from "./pages/SystemInfoPage";
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -136,7 +137,8 @@ const settingsPlaybackRoute = createRoute({
 const settingsSystemRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
   path: "/settings/system",
-  ...stub("System information"),
+  component: SystemInfoPage,
+  staticData: { title: "System information", backTo: "/settings" as const },
 });
 const settingsJobsRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
