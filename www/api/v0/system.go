@@ -15,11 +15,25 @@ func (h *Handlers) GetInstanceVersion(_ context.Context, _ GetInstanceVersionReq
 	v := ver.Get()
 	s := v.String()
 	source := "https://github.com/swopstar/swoptape"
+	year, month, release, patch := int(v.Year), int(v.Month), int(v.Release), int(v.Patch)
 	return GetInstanceVersion200JSONResponse{
 		Version: &s,
 		Branch:  &v.Branch,
 		Commit:  &v.Commit,
 		Source:  &source,
+		Parsed: &struct {
+			Month      *int    `json:"month,omitempty"`
+			Patch      *int    `json:"patch,omitempty"`
+			PreRelease *string `json:"preRelease,omitempty"`
+			Release    *int    `json:"release,omitempty"`
+			Year       *int    `json:"year,omitempty"`
+		}{
+			Year:       &year,
+			Month:      &month,
+			Release:    &release,
+			Patch:      &patch,
+			PreRelease: &v.PreRelease,
+		},
 	}, nil
 }
 

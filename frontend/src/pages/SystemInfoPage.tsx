@@ -23,18 +23,6 @@ const MONTHS = [
   "December",
 ];
 
-function formatVersion(v: string): { label: string; build: string } {
-  const m = v.match(/^(\d{2})(\d{2})\.(\d+)/);
-  if (!m) return { label: v, build: v };
-  const year = 2000 + parseInt(m[1]);
-  const month = parseInt(m[2]);
-  const release = parseInt(m[3]);
-  return {
-    label: `${MONTHS[month - 1]} ${year} release ${release}`,
-    build: v,
-  };
-}
-
 function formatBytes(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
   if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
@@ -90,8 +78,12 @@ export function SystemInfoPage() {
   const { data: versionData } = useGetInstanceVersion();
   const { data: statusData } = useGetInstanceStatus();
 
-  const raw = versionData?.data?.version;
-  const { label, build } = raw ? formatVersion(raw) : { label: "—", build: "" };
+  const build = versionData?.data?.version;
+  const p = versionData?.data?.parsed;
+  const label =
+    p?.year != null && p?.month != null && p?.release != null
+      ? `${MONTHS[(p.month ?? 1) - 1]} ${2000 + p.year} release ${p.release}`
+      : (build ?? "—");
   const source = versionData?.data?.source;
 
   const mem = statusData?.data?.memory;

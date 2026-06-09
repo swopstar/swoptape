@@ -380,6 +380,24 @@ paths:
                     type: string
                     format: uri
                     example: "https://github.com/swopstar/swoptape"
+                  parsed:
+                    type: object
+                    properties:
+                      year:
+                        type: integer
+                        example: 26
+                      month:
+                        type: integer
+                        example: 6
+                      release:
+                        type: integer
+                        example: 1
+                      patch:
+                        type: integer
+                        example: 0
+                      preRelease:
+                        type: string
+                        example: "dev"
 
   /instance/status:
     get:
