@@ -17,6 +17,7 @@ import { ArtistsPage } from "./pages/ArtistsPage";
 import { AlbumsPage } from "./pages/AlbumsPage";
 import { SearchPage } from "./pages/SearchPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { StubSettingsPage } from "./pages/StubSettingsPage";
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -24,6 +25,7 @@ declare module "@tanstack/react-router" {
   }
   interface StaticDataRouteOption {
     title?: string;
+    backTo?: string;
   }
 }
 
@@ -99,6 +101,54 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
+function stub(title: string) {
+  return {
+    component: StubSettingsPage,
+    staticData: { title, backTo: "/settings" as const },
+  };
+}
+
+const settingsUsersRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/users",
+  ...stub("Manage users"),
+});
+const settingsSessionsRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/sessions",
+  ...stub("Active sessions"),
+});
+const settingsTokensRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/tokens",
+  ...stub("Application passwords"),
+});
+const settingsLibrariesRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/libraries",
+  ...stub("Libraries"),
+});
+const settingsPlaybackRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/playback",
+  ...stub("Playback and transcoding"),
+});
+const settingsSystemRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/system",
+  ...stub("System information"),
+});
+const settingsJobsRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/jobs",
+  ...stub("Background jobs"),
+});
+const settingsTasksRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/tasks",
+  ...stub("Scheduled tasks"),
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   authLayoutRoute.addChildren([
@@ -109,6 +159,14 @@ const routeTree = rootRoute.addChildren([
     albumsRoute,
     searchRoute,
     settingsRoute,
+    settingsUsersRoute,
+    settingsSessionsRoute,
+    settingsTokensRoute,
+    settingsLibrariesRoute,
+    settingsPlaybackRoute,
+    settingsSystemRoute,
+    settingsJobsRoute,
+    settingsTasksRoute,
   ]),
 ]);
 

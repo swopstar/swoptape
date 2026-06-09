@@ -17,7 +17,7 @@ import {
 import { LogIn } from "lucide-react";
 import { useCreateSession } from "../api/auth/auth";
 import type { CreateSession200 } from "../api/schemas/createSession200";
-import { setAuthTokens } from "../auth";
+import { setAuthTokens, setEntitlements } from "../auth";
 
 const ALL_ENTITLEMENTS = ["admin", "tag", "upload", "internal"];
 
@@ -39,6 +39,7 @@ export function LoginPage() {
             session.refreshToken,
             session.user?.username,
           );
+          setEntitlements(session.entitlements ?? []);
           navigate({ to: "/home" });
         }
       },

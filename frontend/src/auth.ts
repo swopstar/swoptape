@@ -23,8 +23,28 @@ export function setAuthTokens(
   if (username) localStorage.setItem("username", username);
 }
 
+export function setEntitlements(entitlements: string[]): void {
+  localStorage.setItem("entitlements", JSON.stringify(entitlements));
+}
+
+export function getEntitlements(): string[] {
+  try {
+    const raw = localStorage.getItem("entitlements");
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function hasEntitlement(e: string): boolean {
+  return getEntitlements().includes(e);
+}
+
 export function clearAuthTokens(): void {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("username");
+  localStorage.removeItem("entitlements");
 }
