@@ -3,6 +3,15 @@
 
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -14,32 +23,38 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from "@swopstar/react-ui";
 import {
   ChevronsUpDown,
-  Disc3,
-  Download,
-  FolderOpen,
+  DiscAlbum,
+  Folder,
   House,
+  LogOut,
+  Monitor,
   Plus,
   Search,
-  Smartphone,
+  Settings,
   User,
+  User2,
 } from "lucide-react";
 import { clearAuthTokens, getUsername } from "../auth";
 import { useEndCurrentSession } from "../api/auth/auth";
+import { useThemeMode } from "../theme-context";
 
 const navItems = [
   { to: "/home", label: "Home", icon: House },
-  { to: "/collections", label: "Collections", icon: FolderOpen },
-  { to: "/artists", label: "Artists", icon: User },
-  { to: "/albums", label: "Albums", icon: Disc3 },
+  { to: "/collections", label: "Collections", icon: Folder },
+  { to: "/artists", label: "Artists", icon: User2 },
+  { to: "/albums", label: "Albums", icon: DiscAlbum },
   { to: "/search", label: "Search", icon: Search },
 ] as const;
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const username = getUsername();
+  const { isMobile } = useSidebar();
+  const { mode, setMode } = useThemeMode();
 
   const logout = useEndCurrentSession({
     mutation: {
@@ -53,19 +68,12 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "4px 0",
-          }}
-        >
-          <img src="/favicon.svg" width={28} height={26} alt="" />
+        <div className="flex items-center gap-1 p-1">
+          <img src="/favicon.svg" width={32} height={32} alt="" />
           <span
             style={{
-              fontVariationSettings: "'wght' 800, 'YTLC' 540",
-              fontSize: "16px",
+              fontVariationSettings: "'wght' 800, 'YTLC' 540, 'wdth' 75",
+              fontSize: "20px",
             }}
           >
             swoptape
@@ -122,26 +130,70 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Download size={16} />
-              swoptape app
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Smartphone size={16} />
-              Listen on the go
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={() => logout.mutate()}
-              disabled={logout.isPending}
-            >
-              <User size={16} />
-              {username || "Account"}
-              <ChevronsUpDown size={14} style={{ marginLeft: "auto" }} />
-            </SidebarMenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton>
+                  <User size={16} />
+                  {username || "Account"}
+                  <ChevronsUpDown size={14} style={{ marginLeft: "auto" }} />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side={isMobile ? "bottom" : "top"}
+                align="start"
+                style={{ minWidth: "220px" }}
+              >
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => navigate({ to: "/settings" })}
+                  >
+                    <User size={16} />
+                    Account
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate({ to: "/settings" })}
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Monitor size={16} />
+                    Theme
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      onClick={() => setMode("light")}
+                      data-active={mode === "light" || undefined}
+                    >
+                      Light
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setMode("dark")}
+                      data-active={mode === "dark" || undefined}
+                    >
+                      Dark
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setMode("auto")}
+                      data-active={mode === "auto" || undefined}
+                    >
+                      System
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => logout.mutate()}
+                  disabled={logout.isPending}
+                >
+                  <LogOut size={16} />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
