@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // SPDX-FileCopyrightText: 2026 Rareș Nistor
 
-import { Progress } from "@swopstar/react-ui";
-import { ChevronRight, FileText, FileCode } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import { Alert, AlertDescription, Progress } from "@swopstar/react-ui";
+import { AlertTriangle, ChevronRight, Code2, FileText } from "lucide-react";
 import {
   useGetInstanceStatus,
   useGetInstanceVersion,
@@ -30,11 +31,20 @@ function formatBytes(bytes: number): string {
   return `${bytes} B`;
 }
 
+function isValidHttpUrl(s: string): boolean {
+  try {
+    const url = new URL(s);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 interface InfoRowProps {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
-  onClick?: () => void;
+  onClick: () => void;
 }
 
 function InfoRow({ icon, title, subtitle, onClick }: InfoRowProps) {
@@ -75,6 +85,7 @@ function StatusItem({ label, used, total }: StatusItemProps) {
 }
 
 export function SystemInfoPage() {
+  const navigate = useNavigate();
   const { data: versionData } = useGetInstanceVersion();
   const { data: statusData } = useGetInstanceStatus();
 
@@ -85,6 +96,7 @@ export function SystemInfoPage() {
       ? `${MONTHS[(p.month ?? 1) - 1]} ${2000 + p.year} release ${p.release}`
       : (build ?? "—");
   const source = versionData?.data?.source;
+  const sourceValid = source != null && isValidHttpUrl(source);
 
   const mem = statusData?.data?.memory;
   const storage = statusData?.data?.storage;
@@ -107,22 +119,27 @@ export function SystemInfoPage() {
           icon={<FileText size={20} />}
           title="Software Licence"
           subtitle="GNU Affero General Public License 3.0 only, and third party dependencies"
-          onClick={() =>
-            window.open(
-              "https://spdx.org/licenses/AGPL-3.0-only.html",
-              "_blank",
-              "noopener,noreferrer",
-            )
-          }
+          onClick={() => navigate({ to: "/settings/licenses" })}
         />
-        <InfoRow
-          icon={<FileCode size={20} />}
-          title="Source code"
-          subtitle="View the source code"
-          onClick={() =>
-            source && window.open(source, "_blank", "noopener,noreferrer")
-          }
-        />
+        {sourceValid ? (
+          <InfoRow
+            icon={<Code2 size={20} />}
+            title="Source code"
+            subtitle="View the source code for this build"
+            onClick={() => window.open(source, "_blank", "noopener,noreferrer")}
+          />
+        ) : (
+          <Alert variant="destructive">
+            <AlertTriangle size={16} />
+            <AlertDescription>
+              <strong>This build does not comply with the licence.</strong>{" "}
+              Section 13 of the GNU Affero General Public License requires that
+              anyone running this software over a network must provide users
+              with access to the Corresponding Source. No source code link has
+              been configured for this build.
+            </AlertDescription>
+          </Alert>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">

@@ -21,3 +21,7 @@ test:
 
 check:
     npm -C frontend run lint
+
+notices:
+    mkdir -p tmp/notices
+    cd frontend && npx license-checker --json --production --out ../tmp/notices/npm.json

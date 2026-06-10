@@ -46,6 +46,15 @@ check-vuln:
 tidy:
     go mod tidy
 
+notices:
+    mkdir -p tmp/notices/go-texts
+    go list -m all > tmp/notices/go-versions.txt
+    go-licenses report ./... 2>/dev/null | grep -v '^github.com/swopstar/' > tmp/notices/go.csv
+    go-licenses save ./... --save_path=tmp/notices/go-texts --force \
+        --ignore github.com/swopstar/swoptape \
+        --ignore github.com/swopstar/gokit \
+        2>/dev/null; true
+
 update-gokit:
     go get github.com/swopstar/gokit@latest
     go mod tidy

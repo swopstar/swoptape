@@ -7,3 +7,4 @@
 
 # generated code
 *.gen.go
+/internal/notices/data.json

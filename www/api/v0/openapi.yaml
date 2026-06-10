@@ -41,6 +41,18 @@ components:
       description: Maximum number of items to return.
 
   schemas:
+    NoticeEntry:
+      type: object
+      properties:
+        module:
+          type: string
+        version:
+          type: string
+        spdx:
+          type: string
+        text:
+          type: string
+
     User:
       type: object
       properties:
@@ -432,6 +444,30 @@ paths:
                         type: integer
                       totalBytes:
                         type: integer
+
+  /instance/notices:
+    get:
+      operationId: getInstanceNotices
+      tags: [system]
+      description: Get embedded third-party licence notices. Requires authentication.
+      responses:
+        200:
+          description: Licence notices.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  app:
+                    $ref: '#/components/schemas/NoticeEntry'
+                  go:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NoticeEntry'
+                  npm:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NoticeEntry'
 
   /auth/sessions:
     post:

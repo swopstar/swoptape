@@ -19,6 +19,7 @@ import { SearchPage } from "./pages/SearchPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { StubSettingsPage } from "./pages/StubSettingsPage";
 import { SystemInfoPage } from "./pages/SystemInfoPage";
+import { LicensesPage } from "./pages/LicensesPage";
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -138,7 +139,7 @@ const settingsSystemRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
   path: "/settings/system",
   component: SystemInfoPage,
-  staticData: { title: "System information", backTo: "/settings" as const },
+  staticData: { title: "About this instance", backTo: "/settings" as const },
 });
 const settingsJobsRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
@@ -149,6 +150,15 @@ const settingsTasksRoute = createRoute({
   getParentRoute: () => authLayoutRoute,
   path: "/settings/tasks",
   ...stub("Scheduled tasks"),
+});
+const settingsLicensesRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: "/settings/licenses",
+  component: LicensesPage,
+  staticData: {
+    title: "Software licences",
+    backTo: "/settings/system" as const,
+  },
 });
 
 const routeTree = rootRoute.addChildren([
@@ -169,6 +179,7 @@ const routeTree = rootRoute.addChildren([
     settingsSystemRoute,
     settingsJobsRoute,
     settingsTasksRoute,
+    settingsLicensesRoute,
   ]),
 ]);
 

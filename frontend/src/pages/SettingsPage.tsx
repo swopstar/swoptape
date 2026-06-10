@@ -127,7 +127,7 @@ export function SettingsPage() {
       <Section label="System">
         <SettingsRow
           icon={<MonitorCog size={20} />}
-          title="System information"
+          title="About this instance"
           subtitle={versionSubtitle}
           onClick={() => navigate({ to: "/settings/system" })}
         />

@@ -61,3 +61,8 @@ SPDX-License-Identifier = "MIT"
 path = ["CLAUDE.md", ".claude/**"]
 SPDX-FileCopyrightText = "2026 Rareș Nistor"
 SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = "internal/notices/**"
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "AGPL-3.0-only"

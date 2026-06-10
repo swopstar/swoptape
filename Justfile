@@ -23,6 +23,9 @@ test: (go::test) (web::test)
 
 tidy: (go::tidy)
 
+notices: (go::notices) (web::notices)
+    node scripts/combine-notices.mjs
+
 #
 # Database
 #
