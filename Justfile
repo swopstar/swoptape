@@ -4,6 +4,10 @@
 mod go
 mod web
 
+import 'version.just'
+
+image := "swoptape"
+
 [parallel]
 serve: (go::serve) (web::serve)
 
@@ -25,6 +29,23 @@ tidy: (go::tidy)
 
 notices: (go::notices) (web::notices)
     node scripts/combine-notices.mjs
+
+#
+# Container
+#
+
+container tag="dev":
+    docker build \
+        --build-arg version_year={{version_year}} \
+        --build-arg version_month={{version_month}} \
+        --build-arg version_release={{version_release}} \
+        --build-arg version_patch={{version_patch}} \
+        --build-arg version_pre={{version_pre}} \
+        --build-arg version_branch={{version_branch}} \
+        --build-arg version_commit={{version_commit}} \
+        --build-arg source_url={{source_url}} \
+        -t {{image}}:{{tag}} \
+        .
 
 #
 # Database

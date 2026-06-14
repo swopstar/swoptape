@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+    ports:
+      - 8080:8080
+    volumes:
+      - data:/data
+    environment:
+      SWOPTAPE_DATABASE_HOST: db
+      SWOPTAPE_DATABASE_DATABASE: swoptape
+      SWOPTAPE_DATABASE_USERNAME: user
+      SWOPTAPE_DATABASE_PASSWORD: password
+
+  db:
+    image: postgres:18
+    volumes:
+      - db:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: swoptape
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+
+volumes:
+  data:
+  db:
