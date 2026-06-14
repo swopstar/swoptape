@@ -7,6 +7,7 @@ WORKDIR /src
 RUN npm ci
 
 COPY ./frontend/ /src/
+RUN npm run generate
 RUN npm run build
 
 #
