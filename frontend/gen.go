@@ -3,7 +3,4 @@
 
 package frontend
 
-import "embed"
-
-//go:embed all:dist
-var Content embed.FS
+//go:generate npm run build
