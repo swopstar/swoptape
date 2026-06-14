@@ -7,6 +7,7 @@ WORKDIR /src
 RUN npm ci
 
 COPY ./frontend/ /src/
+COPY ./www/api/v0/openapi.yaml /www/api/v0/openapi.yaml
 RUN npm run generate
 RUN npm run build
 
