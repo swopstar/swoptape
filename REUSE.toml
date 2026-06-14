@@ -10,11 +10,15 @@ path = [
     ".air.toml",
     ".golangci.yml",
     ".pre-commit-config.yaml",
-    ".dockerignore",
-    "Dockerfile",
+    ".github/**",
 ]
 SPDX-FileCopyrightText = "2026 Rareș Nistor"
 SPDX-License-Identifier = "AGPL-3.0-only"
+
+[[annotations]]
+path = [".dockerignore", "Dockerfile", "docker-compose.yml"]
+SPDX-FileCopyrightText = "2026 Rareș Nistor"
+SPDX-License-Identifier = "MIT"
 
 [[annotations]]
 path = [".gitignore", "frontend/.gitignore"]
