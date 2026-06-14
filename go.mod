@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/oapi-codegen/runtime v1.4.1
 	github.com/pelletier/go-toml/v2 v2.3.1
-	github.com/swopstar/gokit v0.0.0-20260605030046-3a5e606dc670
+	github.com/swopstar/gokit v0.0.0-20260614012953-cccd2ae82307
 	gorm.io/gorm v1.31.1
 )
 
@@ -78,5 +78,3 @@ require (
 )
 
 tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
-
-replace github.com/swopstar/gokit => ../gokit
