@@ -1,8 +1,4 @@
 {
-  "env": {
-    "GH_CONFIG_DIR": "/Users/razz/.config/gh-rz-aurora-bot",
-    "GIT_SSH_COMMAND": "ssh -i /Users/razz/.ssh/rz-aurora-bot -o IdentitiesOnly=yes"
-  },
   "hooks": {
     "SessionStart": [
       {

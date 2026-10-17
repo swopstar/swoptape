@@ -49,20 +49,12 @@ just local-db          # start local PostgreSQL via docker compose (dev/swoptape
 
 `just check` and `just test` run the same checks as CI. Both must pass before a PR is opened.
 
-## Agent identity
-
-Local Claude Code sessions in this repository act on GitHub as **`rz-aurora-bot`**, never as the maintainer. `.claude/settings.json` points `gh` at the bot's config directory (`GH_CONFIG_DIR`) and `git` at the bot's SSH key (`GIT_SSH_COMMAND`). Don't override or unset these, and don't fall back to other credentials if they fail. Stop and report the problem instead. Cloud sessions are the exception; see [Cloud sessions](#cloud-sessions).
-
-Commits are authored by the person running the agents, using the `user.name` and `user.email` from their git config. The bot only pushes, opens PRs and comments. Never set the bot as a commit's author or committer.
-
-The bot has write access but can't bypass branch protection. Every change reaches `rewrite/rust` through a PR that the maintainer approves and merges.
-
 ## Cloud sessions
 
 Claude Code cloud sessions run with `CLAUDE_CODE_REMOTE=true`. In them:
 
 - **Branch.** Work from `rewrite/rust`. If the session started on another branch, switch before doing anything else.
-- **GitHub identity.** Git and the GitHub API go through Claude's GitHub proxy, which acts as the maintainer's own GitHub account. This is an accepted exception to the bot rule above. Because the maintainer can't approve their own PRs, they merge cloud PRs through their PR-only bypass. The local `GH_CONFIG_DIR` and `GIT_SSH_COMMAND` settings have no effect in the cloud.
+- **GitHub access.** Git and the GitHub API go through Claude's GitHub proxy, using the maintainer's GitHub account.
 - **No `gh pr` or `gh issue`.** The proxy blocks GitHub's GraphQL API, which those commands use. Use the REST API through `gh api` instead:
 
   ```sh
