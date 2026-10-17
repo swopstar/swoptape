@@ -6,26 +6,22 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
-
-  - repo: https://github.com/golangci/golangci-lint
-    rev: v2.11.3
-    hooks:
-      - id: golangci-lint
-        args: [--timeout=5m]
+        exclude: ^docs/design/
 
   - repo: local
     hooks:
-      - id: go-fmt
-        name: go fmt
-        entry: gofmt -w
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --all --check
         language: system
-        types: [go]
+        types: [rust]
+        pass_filenames: false
 
-      - id: go-vet
-        name: go vet
-        entry: go vet ./...
+      - id: cargo-clippy
+        name: cargo clippy
+        entry: env CARGO_BUILD_WARNINGS=deny cargo clippy --workspace --all-targets --locked
         language: system
-        types: [go]
+        types: [rust]
         pass_filenames: false
 
       - id: frontend-eslint

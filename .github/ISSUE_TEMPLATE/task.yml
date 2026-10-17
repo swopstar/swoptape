@@ -1,0 +1,64 @@
+name: Task
+description: A unit of work small enough for one PR. Written as a specification an agent can implement.
+labels: ["task"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be true once this is done, and why it matters. One or two sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Relevant ADRs (swoptape and swopstar/meta), prior issues or PRs, and reference code (for example `git show main:www/subsonic/response/types.go`).
+      placeholder: |
+        - ADR-T006: dual-mode library model
+        - Depends on #12
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable behaviour, written so each item becomes a test. Avoid prescribing implementation.
+      placeholder: |
+        - [ ] `GET /rest/getMusicFolders` returns one entry per configured library, in XML and JSON
+        - [ ] Requests without valid credentials receive Subsonic error 40
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Crates or paths this change may touch. Anything else is out of scope unless the issue is updated.
+      placeholder: |
+        - crates/swoptape-subsonic
+        - crates/swoptape-server/src/routes.rs
+    validations:
+      required: true
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: Related work that should not be done here.
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      options:
+        - M0 Foundations
+        - M1 Library
+        - M2 Identity
+        - M3 Subsonic
+        - M4 Web player
+        - Post-MVP
+    validations:
+      required: true

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # SPDX-FileCopyrightText: 2026 Rareș Nistor
 
-mod go
+mod rust
 mod web
 
 import 'version.just'
@@ -9,26 +9,20 @@ import 'version.just'
 image := "swoptape"
 
 [parallel]
-serve: (go::serve) (web::serve)
+serve: (rust::serve) (web::serve)
 
 setup: setup-precommit (web::setup)
 setup-ci: (web::setup)
 
-build: (web::build) (go::build)
+build: (web::build) (rust::build)
 
 [parallel]
-fmt: (go::fmt) (web::fmt)
+fmt: (rust::fmt) (web::fmt)
 
-check: (go::check) (web::check) (go::check-tidy)
+check: (rust::check)
     reuse lint
 
-[parallel]
-test: (go::test) (web::test)
-
-tidy: (go::tidy)
-
-notices: (go::notices) (web::notices)
-    node scripts/combine-notices.mjs
+test: (rust::test)
 
 #
 # Container

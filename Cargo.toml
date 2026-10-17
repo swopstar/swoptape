@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# SPDX-FileCopyrightText: 2026 Rareș Nistor
+
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.99"
+license = "AGPL-3.0-only"
+repository = "https://github.com/swopstar/swoptape"
+publish = false
+
+[workspace.dependencies]
+swoptape-core = { path = "crates/swoptape-core" }
+swoptape-db = { path = "crates/swoptape-db" }
+swoptape-subsonic = { path = "crates/swoptape-subsonic" }
+
+axum = "0.8.9"
+tokio = { version = "1.53.3", features = ["macros", "net", "rt-multi-thread"] }
+tower = { version = "0.5.3", features = ["util"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+panic = "abort"
+strip = true

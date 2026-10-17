@@ -1,0 +1,31 @@
+name: Bug
+description: Something behaves differently from how it should.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: behaviour
+    attributes:
+      label: What happened
+      description: Include the request, response, logs or client name and version, as relevant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should have happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps, ideally against the fixture library. A failing test case is even better.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit

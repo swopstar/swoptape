@@ -5,33 +5,30 @@
 ## Structure
 
 ```
-cmd/swoptape/   # main package — binary entry point
-internal/       # Go packages (not exported)
-frontend/       # Vite + React app (uses @swopstar/react-ui)
-data/           # database migrations and seed data
-local/          # local development environment
+crates/      # Rust workspace: core, db, subsonic, server
+frontend/    # Vite + React web player (uses @swopstar/react-ui)
+docs/        # overview, architecture, roadmap, ADRs and designs (suite-wide ones are in swopstar/meta)
+dev/         # local development environment
 ```
+
+The backend is being rewritten in Rust on the `rewrite/rust` branch. See [ADR-T001](docs/adr/T001-rust-rewrite.md).
 
 ## Development
 
 ### Prerequisites
 
-- Go 1.26+
-- Node.js (for the frontend)
-- See `local/swoptape-dev/` for the local environment setup
+- Rust (the toolchain version is pinned in `rust-toolchain.toml` and installed by `rustup` automatically)
+- [`just`](https://github.com/casey/just), [`reuse`](https://reuse.software/) and [`cargo-deny`](https://github.com/EmbarkStudios/cargo-deny)
+- Node.js, for the frontend
+- Docker, for the local PostgreSQL instance
 
-### Backend
-
-```bash
-go run ./cmd/swoptape
-```
-
-### Frontend
+### Common tasks
 
 ```bash
-cd frontend
-npm install
-npm run dev
+just local-db   # start PostgreSQL
+just serve      # run the server and the frontend dev server
+just test       # run the tests
+just check      # lint, licence and dependency checks
 ```
 
 ## UI library

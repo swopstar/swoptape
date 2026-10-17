@@ -4,131 +4,85 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-swoptape is a self-hosted music streaming server. It exposes three API surfaces: its own versioned REST API (`/api`), a frontend RPC channel (`/rpc`), and a Subsonic-compatible API (`/rest`) for compatibility with existing Subsonic clients.
+swoptape is a self-hosted music streaming server, designed to run on weak hardware. The MVP is the server with library scanning, an embedded web player and a Subsonic-compatible API (`/rest`). After the MVP come native clients with offline playback: iOS first, then desktop, and later a native Android app.
 
-The long-term vision includes a first-party swopstar API (`/api`) for native clients, but this is far off — Subsonic/OpenSubsonic compatibility is the priority for the foreseeable future.
+The defining product goal is **dual-mode library navigation**. Users browse by folder structure _and_ by tags (artist, album, genre), both as first-class views of the same tracks. See [ADR-T006](docs/adr/T006-dual-mode-library.md).
 
-swoptape is part of the **swopstar** suite alongside **swopcart** (same concept, video game library). They share a UI component library (`@swopstar/react-ui`, at `/Users/razz/src/swopstar/ui`) and design language. swopcart came first but stalled. swoptape was started to regain momentum on a more tractable problem — music is well-understood, game cataloguing is harder. The plan is to return to swopcart once swoptape is mature and the tooling is proven.
+swoptape is part of the **swopstar** suite alongside **swopcart** (a game library). They share a UI component library (`@swopstar/react-ui`, at `../ui`) and design language.
 
-The defining product goal is **dual-mode library navigation**: users can browse by file system structure (folders, sub-folders) _and_ by tags (artist, album, genre) simultaneously. Most alternatives (Jellyfin, Navidrome, Plex) force a choice — they either flatten everything into a tag hierarchy and lose folder organisation, or expose raw folder browsing with no tag context. swoptape treats both as first-class. This affects library scanning (both paths and tags must be preserved), the data model (tracks need folder ancestry, not just tag metadata), and the API design (endpoints should support both navigation modes).
+## Current state
 
-## Licensing
+The suite is moving to Rust ([ADR-0001](https://github.com/swopstar/meta/blob/main/adr/0001-rust.md)), and swoptape goes first. Its backend is being rewritten from Go to Rust on the long-lived branch `rewrite/rust` ([ADR-T001](docs/adr/T001-rust-rewrite.md)). **PRs target `rewrite/rust`, not `main`.** Milestones are in [`docs/roadmap.md`](docs/roadmap.md). The Go implementation on `main` is reference material. Read it with `git show main:<path>`. The most useful parts are:
 
-This project uses dual licensing enforced by [REUSE](https://reuse.software/). `reuse lint` runs as part of `just check`.
+- `www/subsonic/response/types.go`: Subsonic 1.16.1 response types
+- `www/api/v0/openapi.yaml`: the first-party API's resource design
+- `services/identity/`: users, sessions and application tokens
 
-Every file must carry SPDX headers. New contributors add their own `SPDX-FileCopyrightText` line when they first touch a file:
+`Dockerfile`, `docker-compose.yml`, `.github/workflows/container.yml` and the frontend's API generation (`frontend/orval.config.ts`) still refer to the Go build. They are reworked in later milestones. Don't rely on them.
 
-```go
-// SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2026 Rareș Nistor
-// SPDX-FileCopyrightText: 2027 Contributor Name
-```
+## Decisions
 
-**MIT** — packages likely to move into `gokit` or shared libraries:
+Decisions are recorded in two places:
 
-- `config/`
-- `database/`
-- `services/` (top-level)
-- `services/domain/`
-- `services/identity/`
-- `www/` (top-level — server and route setup only)
-- `www/api/` (router installer)
-- `www/rpc/` (router installer)
+- **Suite-wide** ADRs and standards (stack, licensing, versioning, commit conventions) are in [swopstar/meta](https://github.com/swopstar/meta), under `adr/` and `standards/`. Read them with `gh api repos/swopstar/meta/contents/<path> -H 'Accept: application/vnd.github.raw'`.
+- **swoptape-specific** ADRs are in [`docs/adr/`](docs/adr/README.md), numbered `ADR-T###`. Some deliberately depart from suite-wide ones, and say so.
 
-**AGPL-3.0-only** — everything else: `cmd/`, `frontend/`, `www/api/v0/`, `www/subsonic/`, and handler packages generally.
-
-Non-source files (JSON, YAML, binaries, etc.) are covered by `REUSE.toml` rather than inline headers.
+Follow `accepted` records and treat `proposed` ones as the default. If a change contradicts a swoptape ADR, update or supersede it in the same PR and say so in the description. Changes to suite-wide decisions are proposed in swopstar/meta, not here. Don't restate ADR content elsewhere. Link to it.
 
 ## Commands
 
-Build orchestration uses [`just`](https://github.com/casey/just) with `go.just` (backend) and `web.just` (frontend) as sub-modules.
+Build orchestration uses [`just`](https://github.com/casey/just), with `rust.just` (backend) and `web.just` (frontend) as modules.
 
 ```sh
-just go serve          # run backend with air (hot reload)
-just web serve         # run frontend dev server (Vite HMR)
+just rust serve        # run the server
+just web serve         # run the frontend dev server (Vite HMR)
 just serve             # both in parallel
 
-just go build          # compile to tmp/bin/swoptape
-just go test           # go test ./...
-just go test ./services/identity/... -run TestFoo   # target specific tests
-just go check          # golangci-lint + go mod verify
-just go check-tidy     # verify go.mod/go.sum are tidy
-just go check-vuln     # govulncheck (slower, run periodically)
-just go tidy           # go mod tidy
+just test              # all Rust tests
+just rust test -p swoptape-server health   # targeted tests (args go to cargo test)
+just fmt               # format everything
+just check             # fmt check, clippy (warnings denied), cargo deny, reuse lint
+just rust build        # release build
 
 just local-db          # start local PostgreSQL via docker compose (dev/swoptape-dev-db/)
 ```
 
-Config is loaded from `data/config.toml`. The file is gitignored and auto-generated with defaults on first run.
+`just check` and `just test` run the same checks as CI. Both must pass before a PR is opened.
 
-## Architecture
+## Working on an issue
 
-### Request flow
+The workflow is described in [ADR-T003](docs/adr/T003-agentic-workflow.md). In practice:
 
+1. Read the issue, every ADR it links, and the code in the paths it names. Stay inside that scope. If the issue is ambiguous or seems to conflict with an ADR, stop and ask on the issue rather than guessing.
+2. Branch from `rewrite/rust` as `<issue-number>-<slug>`.
+3. Write failing tests for the acceptance criteria first ([ADR-T002](docs/adr/T002-test-first.md)), then implement.
+4. Run `just fmt`, `just check` and `just test`.
+5. Commit following the [commit conventions](https://github.com/swopstar/meta/blob/main/standards/commit-conventions.md), then open a PR against `rewrite/rust` using the PR template. Close exactly one issue.
+6. When reviewing someone else's PR: check that the tests would fail without the change, that the change stays within the issue's scope, and that it follows the ADRs.
+
+## Code conventions
+
+- **Layering:** `swoptape-server` → `swoptape-subsonic` → `swoptape-core` → `swoptape-db`. HTTP-facing crates never use `swoptape-db` directly.
+- **Lints:** `unsafe_code` is forbidden and clippy's `pedantic` group is on, workspace-wide. Fix lints rather than allowing them. If an `#[allow]` is genuinely warranted, keep it narrow and add a short reason.
+- **Errors:** library crates return `Result` with specific `thiserror` enums. No `unwrap`, `expect` or `panic!` outside tests and genuinely unreachable states. Cross-cutting domain errors (not found, stale, unique violation, not allowed, internal) live in `swoptape-core`. Error messages are not user-facing. The frontend maps error values to localised strings.
+- **Async:** never block a tokio worker thread. Tag parsing, filesystem walks, password hashing and other CPU-bound or blocking calls go through `tokio::task::spawn_blocking` or a dedicated pool.
+- **Logging:** use `tracing` with structured fields (`tracing::info!(status = 404, "request failed")`), not values interpolated into the message.
+- **Tests:** prefer integration tests in each crate's `tests/` directory, which can only see the public API. Test behaviour, not implementation.
+- **Dependencies:** add them to `[workspace.dependencies]` in the root `Cargo.toml` and reference them with `.workspace = true`. Look up the latest version when adding one. Weigh binary size and memory against convenience ([ADR-T004](docs/adr/T004-resource-budget.md)).
+- **Subsonic types** serialise to both XML and JSON. Keep both. Many mobile clients still use XML.
+- **Spelling:** New Zealand English in prose and docs, US English in identifiers.
+
+## Licensing
+
+REUSE is enforced by `reuse lint` in `just check`. Every source file starts with SPDX headers:
+
+```rust
+// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-FileCopyrightText: 2026 Rareș Nistor
 ```
-gin router (www/)
-  ├── /api/v0/   → www/api/v0/
-  ├── /rpc/      → www/rpc/        (frontend RPC, stub)
-  ├── /rest/     → www/subsonic/   (Subsonic API)
-  └── *          → embedded frontend SPA (frontend/dist)
-                   returns 404 for /api, /rpc, /rest prefixes;
-                   falls back to index.html for all other 404s
-```
 
-Each sub-router implements `Install(*gin.RouterGroup)`. They are constructed in `www/server.go` and mounted in `www/routes.go`.
+Contributors add their own `SPDX-FileCopyrightText` line when they first touch a file. Non-source files are covered by `REUSE.toml`. Licence policy is in the suite's [licensing standard](https://github.com/swopstar/meta/blob/main/standards/licensing.md): the server is AGPL-3.0-only, and individual infrastructure files may be marked MIT for later promotion to a shared library.
 
-### Testing
+## Config and data
 
-Test behaviour, not implementation. Tests should survive internal refactors — if a test breaks because a private method was renamed or a query was restructured (but the observable outcome is unchanged), the test is testing the wrong thing. Prefer fewer, higher-confidence tests over exhaustive coverage of internals.
-
-Use external test packages (`package foo_test`) rather than internal (`package foo`). This enforces testing through the public API and makes it structurally impossible to test implementation details.
-
-### Layering rule
-
-`www/` must never import `database/` directly. All data access goes through `services/`. The dependency chain is strictly: `www` → `services` → `database`.
-
-### Service layer
-
-`services/Services` is the single struct passed into the web server. Each domain area lives in its own sub-package (e.g. `services/identity`). Shared domain errors live in `services/domain` to avoid import cycles — service sub-packages import `domain`, and `services` imports the sub-packages.
-
-`services/identity` uses a **rich domain object** pattern:
-
-- `Service` owns queries and lifecycle (implements `IService`)
-- `User` wraps a cached `database.User` and carries behaviour (implements `IUser`)
-- `Session` wraps a cached `database.Session` (implements `ISession`)
-- `ApplicationToken` wraps a cached `database.ApplicationToken` (implements `IApplicationToken`)
-- Read methods operate on the in-memory cache — no DB call, no error
-- Mutating methods write to DB then update the cache field directly
-- `Reload(ctx)` re-fetches from DB when a fresh snapshot is needed
-
-`IService` covers user management, JWT-based sessions, and application tokens. The JWT signing key is an Ed25519 key auto-generated at `data/jwt.key` on first run.
-
-Handler tests mock `IService`. Service tests use a real DB.
-
-### Error handling
-
-Validation errors are collected with `errors.Join` so multiple failures are returned at once. Service-specific errors (e.g. `ErrUsernameTooShort`) live alongside the service code. Shared cross-service errors live in `services/domain`:
-
-| Error           | Meaning                                                    |
-| --------------- | ---------------------------------------------------------- |
-| `ErrNotFound`   | Row doesn't exist                                          |
-| `ErrStale`      | Row disappeared between load and write (rowsAffected != 1) |
-| `ErrUnique`     | Unique constraint violation                                |
-| `ErrNotAllowed` | Authenticated but forbidden                                |
-| `ErrInternal`   | Unexpected error                                           |
-
-Error message strings are not user-facing — the frontend maps error values to localised strings.
-
-### Database
-
-GORM via `gokit/database`. Models registered in `database/models.go`. `db.AutoMigrate()` runs at startup. Current models: `User`, `UserPermission`, `Session`, `ApplicationToken`.
-
-### Config
-
-TOML, loaded from `data/config.toml` (gitignored). Sections: `server` (address, timeouts), `database`, `auth.jwt` (key path, access/refresh TTLs, issuer), `jobs`. `data/` is covered by `.gitignore` — don't add files from it to the index.
-
-### Subsonic response types
-
-`www/subsonic/response/` contains Go types matching the Subsonic 1.16.1 schema, originally generated from the XSD and now maintained directly. `DateTime` (in `datetime.go`) wraps `time.Time` with RFC3339 XML attribute and JSON marshaling. All types serialise to both XML and JSON via struct tags.
-
-The current target is Subsonic 1.16.1. Adopting [OpenSubsonic](https://opensubsonic.netlify.app/) extensions is a future goal. OpenSubsonic dropped XML, but XML support should be retained alongside JSON for compatibility with the broadest range of mobile clients — the dual XML/JSON serialisation on the response types is intentional and should be preserved.
+`data/` is gitignored and holds runtime config and generated keys. Don't add files from it to the index.
