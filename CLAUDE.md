@@ -49,6 +49,12 @@ just local-db          # start local PostgreSQL via docker compose (dev/swoptape
 
 `just check` and `just test` run the same checks as CI. Both must pass before a PR is opened.
 
+## Agent identity
+
+Claude Code sessions in this repository act on GitHub as **`rz-aurora-bot`**, never as the maintainer. `.claude/settings.json` points `gh` at the bot's config directory (`GH_CONFIG_DIR`) and `git` at the bot's SSH key (`GIT_SSH_COMMAND`). Don't override or unset these, and don't fall back to other credentials if they fail. Stop and report the problem instead.
+
+The bot has write access but can't bypass branch protection. Every change reaches `rewrite/rust` through a PR that the maintainer approves and merges.
+
 ## Working on an issue
 
 The workflow is described in [ADR-T003](docs/adr/T003-agentic-workflow.md). In practice:
