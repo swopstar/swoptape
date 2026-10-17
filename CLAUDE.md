@@ -53,6 +53,8 @@ just local-db          # start local PostgreSQL via docker compose (dev/swoptape
 
 Claude Code sessions in this repository act on GitHub as **`rz-aurora-bot`**, never as the maintainer. `.claude/settings.json` points `gh` at the bot's config directory (`GH_CONFIG_DIR`) and `git` at the bot's SSH key (`GIT_SSH_COMMAND`). Don't override or unset these, and don't fall back to other credentials if they fail. Stop and report the problem instead.
 
+Commits are authored by the person running the agents, using the `user.name` and `user.email` from their git config. The bot only pushes, opens PRs and comments. Never set the bot as a commit's author or committer.
+
 The bot has write access but can't bypass branch protection. Every change reaches `rewrite/rust` through a PR that the maintainer approves and merges.
 
 ## Working on an issue
