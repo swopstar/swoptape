@@ -49,13 +49,23 @@ just local-db          # start local PostgreSQL via docker compose (dev/swoptape
 
 `just check` and `just test` run the same checks as CI. Both must pass before a PR is opened.
 
-## Agent identity
+## Cloud sessions
 
-Claude Code sessions in this repository act on GitHub as **`rz-aurora-bot`**, never as the maintainer. `.claude/settings.json` points `gh` at the bot's config directory (`GH_CONFIG_DIR`) and `git` at the bot's SSH key (`GIT_SSH_COMMAND`). Don't override or unset these, and don't fall back to other credentials if they fail. Stop and report the problem instead.
+Claude Code cloud sessions run with `CLAUDE_CODE_REMOTE=true`. In them:
 
-Commits are authored by the person running the agents, using the `user.name` and `user.email` from their git config. The bot only pushes, opens PRs and comments. Never set the bot as a commit's author or committer.
+- **Branch.** Work from `rewrite/rust`. If the session started on another branch, switch before doing anything else.
+- **GitHub access.** Git and the GitHub API go through Claude's GitHub proxy, using the maintainer's GitHub account.
+- **No `gh pr` or `gh issue`.** The proxy blocks GitHub's GraphQL API, which those commands use. Use the REST API through `gh api` instead:
 
-The bot has write access but can't bypass branch protection. Every change reaches `rewrite/rust` through a PR that the maintainer approves and merges.
+  ```sh
+  gh api repos/swopstar/swoptape/issues/<number>
+  gh api repos/swopstar/swoptape/pulls -f base=rewrite/rust -f head=<branch> -f title='<title>' -F body=@pr-body.md
+  gh api repos/swopstar/swoptape/issues/<number>/comments -F body=@comment.md
+  ```
+
+- **Database.** A SessionStart hook (`.claude/hooks/cloud-session-start.sh`) starts PostgreSQL from `dev/swoptape-dev-db` and sets `DATABASE_URL`. If `DATABASE_URL` isn't set, the hook failed. Report it rather than working around it.
+- **Tools.** The cloud environment's setup script is [`scripts/cloud-setup.sh`](scripts/cloud-setup.sh), pasted into the environment's settings. It installs the pinned Rust toolchain, `just`, `cargo-deny` and `reuse`. If a PR changes a version pinned there, say in the PR that the environment's setup script needs updating.
+- **Reporting.** Cloud sessions can't message local sessions. Put progress and questions on the issue or PR.
 
 ## Working on an issue
 
