@@ -8,11 +8,14 @@
 ## Rust rewrite (MVP)
 
 Developed on the `rewrite/rust` branch, which replaces `main` once the MVP is
-reached.
+reached. Each item below is tracked as issues under the matching
+[GitHub milestone](https://github.com/swopstar/swoptape/milestones).
 
 ### M0: Foundations
 
 - Cargo workspace, CI, agent instructions and ADRs
+- Command-line interface, configuration file and structured logging
+- PostgreSQL connection, migrations and a test database harness
 - Build-time application version and source link, per the
   [versioning](https://github.com/swopstar/meta/blob/main/standards/versioning.md) and
   [licensing](https://github.com/swopstar/meta/blob/main/standards/licensing.md) standards
@@ -25,17 +28,20 @@ reached.
 - Tracks whose files disappear are marked missing and kept for a grace period,
   so moved files keep their plays, stars and playlist entries
   ([ADR-T006](adr/T006-dual-mode-library.md))
-- Library schema and migrations
+- Library schema and migrations, with a fixture library for tests
 - Artwork, with generated thumbnails in a cache directory under `data/`
+- Navigation queries shared by the Subsonic API and the web player
 
 ### M2: Identity
 
+- First-party API skeleton at `/api/v1`, with a generated OpenAPI document
 - Users and sessions
 - First-user setup through the API
 - Permissions (`admin`, `upload`, `tag`) stored from the start; only `admin` is
   enforced until uploads and tag editing exist. Mapped to Subsonic roles where
   they have an equivalent.
 - App passwords for Subsonic clients
+- Library management API: adding folders, starting scans, scan progress
 - `swoptape` subcommands: `serve`, `migrate` and `user reset-password` for
   admin recovery
 
@@ -47,12 +53,15 @@ reached.
 
 ### M4: Web player
 
+- First-party library API and the embedded frontend
 - First-run setup screens
-- Folder and tag browsing, and playback
+- Folder and tag browsing, search, playlists and playback
+- Settings for libraries, users and app passwords
 - Empty states from the mockups, with "Upload tracks" hidden until uploads exist
 - App password management
 - **Settings → About this instance**: licence, version and source link, as the
   licensing standard requires before general use
+- Static musl release builds and the container image
 
 ## Open questions
 
