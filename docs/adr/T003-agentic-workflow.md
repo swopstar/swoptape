@@ -12,7 +12,7 @@ The rewrite is also an exercise in agentic development. Agents implement changes
 - **Issues are specifications.** Each issue states the goal, links the relevant ADRs, lists acceptance criteria and names the crates or paths in scope. Issues use the task template.
 - **One issue, one PR.** An implementing agent works on its own branch (`<issue-number>-<slug>`, off `rewrite/rust`) and opens a PR that closes exactly one issue.
 - **Agent review.** A separate reviewing agent reviews every PR and posts its findings as PR comments. The implementing agent addresses them.
-- **Separate identity.** Agents push branches, open PRs and post reviews as the `rz-aurora-bot` account, which has write access but no admin rights. They never use the maintainer's credentials.
+- **Separate identity.** Agents push branches, open PRs and post reviews as the `rz-aurora-bot` account, which has write access but no admin rights. They never use the maintainer's credentials, with one accepted exception: Claude Code cloud sessions act as the maintainer's GitHub account, because the cloud's GitHub proxy uses the account connected to the maintainer's Claude account. The maintainer merges those PRs through the PR-only bypass, since GitHub doesn't let anyone approve their own PR.
 - **Human merge.** The maintainer reviews and merges every PR. Branch protection on `rewrite/rust` requires passing CI and the maintainer's approval.
 - **CI is the gate.** Formatting, clippy with warnings denied, tests, `cargo deny` and `reuse lint` must all pass. `just check` and `just test` run the same checks locally.
 - **Decisions are written down.** Anything that changes architecture or contradicts an ADR updates the ADR in the same PR.
